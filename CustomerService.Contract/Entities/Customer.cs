@@ -13,16 +13,16 @@
         /// <summary>
         ///     Имя
         /// </summary>
-        public long FirstName { get; set; }
+        public string FirstName { get; set; }
         
         /// <summary>
         ///     Фамилия
         /// </summary>
-        public long LastName { get; set; }
+        public string LastName { get; set; }
         
         /// <summary>
         ///     Отчество
         /// </summary>
-        public long MiddleName { get; set; }
+        public string MiddleName { get; set; }
     }
 }
