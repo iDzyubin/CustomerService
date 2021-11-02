@@ -1,4 +1,7 @@
-﻿using CustomerService.Contract.Entities;
+﻿using System;
+using AutoMapper;
+using CustomerService.BusinessLogic.Models;
+using CustomerService.Contract.Entities;
 using CustomerService.Contract.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,40 +12,107 @@ namespace CustomerService.Application.Controllers
     public class CustomerController : ControllerBase
     {
         private readonly ICustomerService _customerService;
+        private readonly IMapper _mapper;
 
-        public CustomerController(ICustomerService customerService)
+        public CustomerController(ICustomerService customerService, IMapper mapper)
         {
             _customerService = customerService;
+            _mapper = mapper;
         }
 
-        [HttpGet]
-        public IActionResult GetCustomers()
+        [HttpPost]
+        public ActionResult<GetCustomersReply> GetCustomers(GetCustomersRequest request)
         {
-            return Ok(_customerService.GetAllCustomers());
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var result = _customerService.GetAllCustomers();
+                return Ok(_mapper.Map<GetCustomersReply>(result));
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.ToString());
+            }
         }
 
-        [HttpGet("{customerId:long}")]
-        public IActionResult GetCustomerById(long customerId)
+        [HttpPost]
+        public ActionResult<GetCustomerByIdReply> GetCustomerById(GetCustomerByIdRequest request)
         {
-            return Ok(_customerService.GetCustomerById(customerId));
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            
+            try
+            {
+                var result = _customerService.GetCustomerById(request.Id);
+                return Ok(_mapper.Map<GetCustomerByIdReply>(result));
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.ToString());
+            }
         }
         
         [HttpPost]
-        public IActionResult AddCustomer(Customer customer)
+        public ActionResult<AddCustomerReply> AddCustomer(AddCustomerRequest request)
         {
-            return Ok(_customerService.AddCustomer(customer));
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var result = _customerService.AddCustomer(_mapper.Map<Customer>(request));
+                return Ok(_mapper.Map<AddCustomerReply>(result));
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.ToString());
+            }
         }
 
-        [HttpPut("{customerId:long}")]
-        public IActionResult UpdateCustomer(long customerId, Customer customer)
+        [HttpPost]
+        public ActionResult<UpdateCustomerReply> UpdateCustomer(UpdateCustomerRequest request)
         {
-            return Ok(_customerService.UpdateCustomer(customerId, customer));
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var result = _customerService.UpdateCustomer(request.Id, _mapper.Map<Customer>(request));
+                return Ok(_mapper.Map<UpdateCustomerReply>(result));
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.ToString());
+            }
         }
 
-        [HttpDelete("{customerId:long}")]
-        public IActionResult DeleteCustomer(long customerId)
+        [HttpPost]
+        public ActionResult<DeleteCustomerReply> DeleteCustomer(DeleteCustomerRequest request)
         {
-            return Ok(_customerService.DeleteCustomer(customerId));
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            
+            try
+            {
+                var result = _customerService.DeleteCustomer(request.Id);
+                return Ok(_mapper.Map<DeleteCustomerReply>(result));
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e.ToString());
+            }
         }
     }
 }

@@ -2,8 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using CustomerService.BusinessLogic.Contexts;
+using CustomerService.BusinessLogic.Validators;
 using CustomerService.Contract.Interfaces;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -35,6 +38,19 @@ namespace CustomerService.Application
                 builder.UseNpgsql(
                     Configuration.GetConnectionString("DefaultConnection"),
                     x => x.MigrationsAssembly("CustomerService.BusinessLogic")));
+
+            services.AddFluentValidation(configuration =>
+            {
+                configuration.RegisterValidatorsFromAssemblyContaining<AnchorValidator>();
+                configuration.ImplicitlyValidateChildProperties = true;
+                configuration.ImplicitlyValidateRootCollectionElements = true;
+                configuration.DisableDataAnnotationsValidation = true;
+            });
+
+            var mapperConfiguration = new MapperConfiguration(configuration => 
+                configuration.AddMaps("CustomerService.BusinessLogic"));
+            var mapper = mapperConfiguration.CreateMapper();
+            services.AddSingleton(mapper);
             
             services.AddControllers();
             services.AddSwaggerGen(c =>
@@ -46,6 +62,13 @@ namespace CustomerService.Application
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            // Create db after start application
+            using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
+            {
+                var context = serviceScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                context.Database.EnsureCreated();
+            }
+            
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

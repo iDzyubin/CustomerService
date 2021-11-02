@@ -9,8 +9,6 @@ namespace CustomerService.BusinessLogic.Contexts
 
         public ApplicationDbContext(DbContextOptions options) : base(options)
         {
-            // Create db after start application
-            Database.EnsureCreated();
         }
     }
 }
