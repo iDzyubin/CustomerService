@@ -1,22 +1,18 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using AutoMapper;
+using CustomerService.Application.Extensions;
 using CustomerService.BusinessLogic.Contexts;
 using CustomerService.BusinessLogic.Validators;
 using CustomerService.Contract.Interfaces;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using NATS.Client;
+using NatsExtensions.Options;
 
 namespace CustomerService.Application
 {
@@ -32,6 +28,9 @@ namespace CustomerService.Application
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<NatsOptions>(Configuration.GetSection(NatsOptions.Section));
+            
+            services.AddHandlersToHost();
             services.AddTransient<ICustomerService, BusinessLogic.Services.CustomerService>();
             
             services.AddDbContext<ApplicationDbContext>(builder => 
@@ -51,6 +50,14 @@ namespace CustomerService.Application
                 configuration.AddMaps("CustomerService.BusinessLogic"));
             var mapper = mapperConfiguration.CreateMapper();
             services.AddSingleton(mapper);
+            
+            services.AddTransient(_ =>
+            {
+                var factory = new ConnectionFactory();
+                var options = ConnectionFactory.GetDefaultOptions();
+                options.Url = Configuration.GetConnectionString("NatsConnection");
+                return factory.CreateConnection();
+            });
             
             services.AddControllers();
             services.AddSwaggerGen(c =>
