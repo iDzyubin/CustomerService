@@ -1,9 +1,14 @@
-﻿namespace CustomerService.BusinessLogic.Models
+﻿using CustomerService.Contract.Messages;
+using NatsExtensions.Attributes;
+using NatsExtensions.Models;
+
+namespace CustomerService.BusinessLogic.Models
 {
     /// <summary>
-    /// Запрос на обновление пользователя
+    /// Запрос на обновление покупателя
     /// </summary>
-    public class UpdateCustomerRequest
+    [ServiceBus(Code = ServiceBusCodes.UpdateCustomerRequest)]
+    public class UpdateCustomerRequest : Request
     {
         /// <summary>
         /// Идентификатор покупателя

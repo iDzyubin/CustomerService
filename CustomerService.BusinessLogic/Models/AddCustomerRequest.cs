@@ -1,9 +1,14 @@
-﻿namespace CustomerService.BusinessLogic.Models
+﻿using CustomerService.Contract.Messages;
+using NatsExtensions.Attributes;
+using NatsExtensions.Models;
+
+namespace CustomerService.BusinessLogic.Models
 {
     /// <summary>
-    /// Запрос на добавление пользователя
+    /// Запрос на добавление покупателя
     /// </summary>
-    public class AddCustomerRequest
+    [ServiceBus(Code = ServiceBusCodes.AddCustomerRequest)]
+    public class AddCustomerRequest : Request
     {
         /// <summary>
         /// Имя

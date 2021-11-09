@@ -22,8 +22,8 @@ namespace CustomerService.Application.Handlers
 
         public async Task<GetCustomersReply> Handle(GetCustomersRequest request)
         {
-            var customers = _customerService.GetAllCustomers();
-            return await Task.FromResult(_mapper.Map<GetCustomersReply>(customers));
+            var customers = await _customerService.GetAllCustomersAsync();
+            return _mapper.Map<GetCustomersReply>(customers);
         }
     }
 }

@@ -8,7 +8,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace CustomerService.BusinessLogic.Migrations
 {
-    [DbContext(typeof(ApplicationDbContext))]
+    [DbContext(typeof(CustomerContext))]
     [Migration("20211031221906_InitialCreate")]
     partial class InitialCreate
     {

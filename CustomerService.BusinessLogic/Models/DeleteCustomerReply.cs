@@ -1,9 +1,14 @@
-﻿namespace CustomerService.BusinessLogic.Models
+﻿using CustomerService.Contract.Messages;
+using NatsExtensions.Attributes;
+using NatsExtensions.Models;
+
+namespace CustomerService.BusinessLogic.Models
 {
     /// <summary>
     /// Ответ на запрос на удаление покупателя
     /// </summary>
-    public class DeleteCustomerReply
+    [ServiceBus(Code = ServiceBusCodes.DeleteCustomerReply)]
+    public class DeleteCustomerReply : Reply
     {
         /// <summary>
         /// Имя

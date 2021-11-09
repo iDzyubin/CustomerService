@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using CustomerService.Contract.Entities;
 using CustomerService.Contract.Interfaces;
 using NSubstitute;
@@ -29,24 +30,24 @@ namespace CustomerService.Tests
         [TestCaseSource(
             typeof(CustomerServiceTestCaseSources),
             nameof(CustomerServiceTestCaseSources.GetAddCustomerInvalidParameters))]
-        public void TestAddCustomerWithInvalidArguments(Customer customer)
+        public async Task TestAddCustomerWithInvalidArguments(Customer customer)
         {
             // Arrange.
-            _customerService.AddCustomer(default).ReturnsForAnyArgs(x => throw new ArgumentException());
+            _customerService.AddCustomerAsync(default).ReturnsForAnyArgs(Task.FromException<Customer>(new ArgumentException()));
 
             // Act.
 
             // Assert.
-            Assert.Throws<ArgumentException>(() => _customerService.AddCustomer(customer));
+            Assert.ThrowsAsync<ArgumentException>(async () => await _customerService.AddCustomerAsync(customer));
         }
 
         [TestCaseSource(
             typeof(CustomerServiceTestCaseSources),
             nameof(CustomerServiceTestCaseSources.GetAddCustomerValidParameters))]
-        public void TestAddCustomerWithValidArguments(Customer customer)
+        public async Task TestAddCustomerWithValidArguments(Customer customer)
         {
             // Arrange.
-            _customerService.AddCustomer(customer).Returns(new Customer
+            _customerService.AddCustomerAsync(customer).Returns(new Customer
             {
                 Id = 1, 
                 FirstName = customer.FirstName, 
@@ -55,7 +56,7 @@ namespace CustomerService.Tests
             });
 
             // Act.
-            var result = _customerService.AddCustomer(customer);
+            var result = await _customerService.AddCustomerAsync(customer);
 
             // Assert.
             Assert.That(result, Is.Not.Null);
@@ -68,24 +69,24 @@ namespace CustomerService.Tests
         [TestCaseSource(
             typeof(CustomerServiceTestCaseSources),
             nameof(CustomerServiceTestCaseSources.GetUpdateCustomerInvalidParameters))]
-        public void TestUpdateCustomerWithInvalidArguments(long customerId, Customer customer)
+        public async Task TestUpdateCustomerWithInvalidArguments(long customerId, Customer customer)
         {
             // Arrange.
-            _customerService.UpdateCustomer(default, default).ReturnsForAnyArgs(x => throw new ArgumentException());
+            _customerService.UpdateCustomerAsync(default).ReturnsForAnyArgs(Task.FromException<Customer>(new ArgumentException()));
 
             // Act.
 
             // Assert.
-            Assert.Throws<ArgumentException>(() => _customerService.UpdateCustomer(customerId, customer));
+            Assert.ThrowsAsync<ArgumentException>(async () => await _customerService.UpdateCustomerAsync(customer));
         }
 
         [TestCaseSource(
             typeof(CustomerServiceTestCaseSources),
             nameof(CustomerServiceTestCaseSources.GetUpdateCustomerValidParameters))]
-        public void TestUpdateCustomerWithValidArguments(long customerId, Customer customer)
+        public async Task TestUpdateCustomerWithValidArguments(long customerId, Customer customer)
         {
             // Arrange.
-            _customerService.UpdateCustomer(customerId, customer).Returns(new Customer
+            _customerService.UpdateCustomerAsync(customer).Returns(new Customer
             {
                 Id = 1, 
                 FirstName = customer.FirstName, 
@@ -94,7 +95,7 @@ namespace CustomerService.Tests
             });
 
             // Act.
-            var result = _customerService.UpdateCustomer(customerId, customer);
+            var result = await _customerService.UpdateCustomerAsync(customer);
 
             // Assert.
             Assert.That(result, Is.Not.Null);
@@ -110,24 +111,24 @@ namespace CustomerService.Tests
         public void TestDeleteCustomerWithInvalidArguments(long customerId)
         {
             // Arrange.
-            _customerService.DeleteCustomer(default).ReturnsForAnyArgs(x => throw new ArgumentException());
+            _customerService.DeleteCustomerAsync(default).ReturnsForAnyArgs(Task.FromException<Customer>(new ArgumentException()));
         
             // Act.
         
             // Assert.
-            Assert.Throws<ArgumentException>(() => _customerService.DeleteCustomer(customerId));
+            Assert.ThrowsAsync<ArgumentException>(async () => await _customerService.DeleteCustomerAsync(customerId));
         }
         
         [TestCaseSource(
             typeof(CustomerServiceTestCaseSources),
             nameof(CustomerServiceTestCaseSources.GetDeleteCustomerValidParameters))]
-        public void TestDeleteCustomerWithValidArguments(long customerId, Customer expected)
+        public async Task TestDeleteCustomerWithValidArguments(long customerId, Customer expected)
         {
             // Arrange.
-            _customerService.DeleteCustomer(customerId).Returns(expected);
+            _customerService.DeleteCustomerAsync(customerId).Returns(expected);
         
             // Act.
-            var result = _customerService.DeleteCustomer(customerId);
+            var result = await _customerService.DeleteCustomerAsync(customerId);
         
             // Assert.
             Assert.That(result, Is.Not.Null);
@@ -143,24 +144,24 @@ namespace CustomerService.Tests
         public void TestGetCustomerByIdWithInvalidArguments(long customerId)
         {
             // Arrange.
-            _customerService.GetCustomerById(default).ReturnsForAnyArgs(x => throw new ArgumentException());
+            _customerService.GetCustomerByIdAsync(default).ReturnsForAnyArgs(Task.FromException<Customer>(new ArgumentException()));
         
             // Act.
         
             // Assert.
-            Assert.Throws<ArgumentException>(() => _customerService.GetCustomerById(customerId));
+            Assert.ThrowsAsync<ArgumentException>(async () => await _customerService.GetCustomerByIdAsync(customerId));
         }
         
         [TestCaseSource(
             typeof(CustomerServiceTestCaseSources),
             nameof(CustomerServiceTestCaseSources.GetCustomerByIdValidParameters))]
-        public void TestGetCustomerByIdWithValidArguments(long customerId, Customer expected)
+        public async Task TestGetCustomerByIdWithValidArguments(long customerId, Customer expected)
         {
             // Arrange.
-            _customerService.GetCustomerById(customerId).Returns(expected);
+            _customerService.GetCustomerByIdAsync(customerId).Returns(expected);
         
             // Act.
-            var result = _customerService.GetCustomerById(customerId);
+            var result = await _customerService.GetCustomerByIdAsync(customerId);
         
             // Assert.
             Assert.That(result, Is.Not.Null);
@@ -173,13 +174,13 @@ namespace CustomerService.Tests
         [TestCaseSource(
             typeof(CustomerServiceTestCaseSources),
             nameof(CustomerServiceTestCaseSources.GetAllCustomersParameters))]
-        public void TestGetAllCustomers(List<Customer> expected)
+        public async Task TestGetAllCustomers(List<Customer> expected)
         {
             // Arrange.
-            _customerService.GetAllCustomers().Returns(expected);
+            _customerService.GetAllCustomersAsync().Returns(expected);
         
             // Act.
-            var result = _customerService.GetAllCustomers();
+            var result = await _customerService.GetAllCustomersAsync();
         
             // Assert.
             Assert.That(result, Is.Not.Null);

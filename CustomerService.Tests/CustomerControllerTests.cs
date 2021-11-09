@@ -1,10 +1,13 @@
-﻿using AutoMapper;
+﻿using System.Threading.Tasks;
+using AutoMapper;
 using CustomerService.Application.Controllers;
+using CustomerService.BusinessLogic.Adapters;
 using CustomerService.BusinessLogic.Contexts;
 using CustomerService.BusinessLogic.Models;
 using CustomerService.Contract.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using NSubstitute;
 using NUnit.Framework;
 
 namespace CustomerService.Tests
@@ -14,19 +17,21 @@ namespace CustomerService.Tests
     {
         private ICustomerService _customerService;
         private CustomerController _customerController;
-        private ApplicationDbContext _dbContext;
+        private IOrderServiceAdapter _orderServiceAdapter;
+        private CustomerContext _dbContext;
         private IMapper _mapper;
         
         [SetUp]
         public void SetUp()
         {
-            var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            var options = new DbContextOptionsBuilder<CustomerContext>()
                 .UseInMemoryDatabase(databaseName: "testCustomersDb")
                 .Options;
-            _dbContext = new ApplicationDbContext(options);
+            _dbContext = new CustomerContext(options);
             _mapper = new Mapper(new MapperConfiguration(configure => configure.AddMaps("CustomerService.BusinessLogic")));
             _customerService = new BusinessLogic.Services.CustomerService(_dbContext);
-            _customerController = new CustomerController(_customerService, _mapper);
+            _orderServiceAdapter = Substitute.For<IOrderServiceAdapter>();
+            _customerController = new CustomerController(_orderServiceAdapter, _customerService, _mapper);
         }
 
         [TearDown]
@@ -40,13 +45,13 @@ namespace CustomerService.Tests
         [TestCaseSource(
             typeof(CustomerControllerTestCaseSources),
             nameof(CustomerControllerTestCaseSources.GetAddCustomerInvalidParameters))]
-        public void TestAddCustomerWithInvalidParameters(AddCustomerRequest request, AddCustomerReply reply)
+        public async Task TestAddCustomerWithInvalidParameters(AddCustomerRequest request, AddCustomerReply reply)
         {
             // Arrange.
             _customerController.ModelState.AddModelError("error", "invalid request");
 
             // Act.
-            var result = _customerController.AddCustomer(request);
+            var result = await _customerController.AddCustomer(request);
 
             // Assert.
             Assert.That(result, Is.Not.Null);
@@ -57,12 +62,12 @@ namespace CustomerService.Tests
         [TestCaseSource(
             typeof(CustomerControllerTestCaseSources),
             nameof(CustomerControllerTestCaseSources.GetAddCustomerValidParameters))]
-        public void TestAddCustomerWithValidParameters(AddCustomerRequest request, AddCustomerReply expectedReply)
+        public async Task TestAddCustomerWithValidParameters(AddCustomerRequest request, AddCustomerReply expectedReply)
         {
             // Arrange.
 
             // Act.
-            var reply = _customerController.AddCustomer(request);
+            var reply = await _customerController.AddCustomer(request);
 
             // Assert.
             Assert.That(reply, Is.Not.Null);

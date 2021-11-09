@@ -1,18 +1,14 @@
-using AutoMapper;
 using CustomerService.Application.Extensions;
+using CustomerService.BusinessLogic.Adapters;
 using CustomerService.BusinessLogic.Contexts;
-using CustomerService.BusinessLogic.Validators;
+using CustomerService.BusinessLogic.Extensions;
 using CustomerService.Contract.Interfaces;
-using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using NATS.Client;
-using NatsExtensions.Options;
 
 namespace CustomerService.Application
 {
@@ -28,36 +24,13 @@ namespace CustomerService.Application
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<NatsOptions>(Configuration.GetSection(NatsOptions.Section));
-            
-            services.AddHandlersToHost();
+            services.AddTransient<IOrderServiceAdapter, OrderServiceAdapter>();
             services.AddTransient<ICustomerService, BusinessLogic.Services.CustomerService>();
             
-            services.AddDbContext<ApplicationDbContext>(builder => 
-                builder.UseNpgsql(
-                    Configuration.GetConnectionString("DefaultConnection"),
-                    x => x.MigrationsAssembly("CustomerService.BusinessLogic")));
-
-            services.AddFluentValidation(configuration =>
-            {
-                configuration.RegisterValidatorsFromAssemblyContaining<AnchorValidator>();
-                configuration.ImplicitlyValidateChildProperties = true;
-                configuration.ImplicitlyValidateRootCollectionElements = true;
-                configuration.DisableDataAnnotationsValidation = true;
-            });
-
-            var mapperConfiguration = new MapperConfiguration(configuration => 
-                configuration.AddMaps("CustomerService.BusinessLogic"));
-            var mapper = mapperConfiguration.CreateMapper();
-            services.AddSingleton(mapper);
-            
-            services.AddTransient(_ =>
-            {
-                var factory = new ConnectionFactory();
-                var options = ConnectionFactory.GetDefaultOptions();
-                options.Url = Configuration.GetConnectionString("NatsConnection");
-                return factory.CreateConnection();
-            });
+            services.AddDbContext(Configuration);
+            services.AddFluentValidation();
+            services.AddAutomapper();
+            services.AddNats(Configuration).AddHandlersToHost();
             
             services.AddControllers();
             services.AddSwaggerGen(c =>
@@ -72,7 +45,7 @@ namespace CustomerService.Application
             // Create db after start application
             using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
             {
-                var context = serviceScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                var context = serviceScope.ServiceProvider.GetRequiredService<CustomerContext>();
                 context.Database.EnsureCreated();
             }
             

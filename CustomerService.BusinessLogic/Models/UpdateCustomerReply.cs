@@ -1,9 +1,14 @@
-﻿namespace CustomerService.BusinessLogic.Models
+﻿using CustomerService.Contract.Messages;
+using NatsExtensions.Attributes;
+using NatsExtensions.Models;
+
+namespace CustomerService.BusinessLogic.Models
 {
     /// <summary>
-    /// Ответ на запрос на обновление пользователя
+    /// Ответ на запрос на обновление покупателя
     /// </summary>
-    public class UpdateCustomerReply
+    [ServiceBus(Code = ServiceBusCodes.UpdateCustomerReply)]
+    public class UpdateCustomerReply : Reply
     {
         /// <summary>
         /// Имя

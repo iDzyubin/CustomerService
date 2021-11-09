@@ -1,9 +1,14 @@
-﻿namespace CustomerService.BusinessLogic.Models
+﻿using CustomerService.Contract.Messages;
+using NatsExtensions.Attributes;
+using NatsExtensions.Models;
+
+namespace CustomerService.BusinessLogic.Models
 {
     /// <summary>
     /// Запрос на получение покупателя
     /// </summary>
-    public class GetCustomerByIdRequest
+    [ServiceBus(Code = ServiceBusCodes.GetCustomerByIdRequest)]
+    public class GetCustomerByIdRequest : Request
     {
         /// <summary>
         /// Идентификатор искомого покупателя

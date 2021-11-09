@@ -1,74 +1,70 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Threading.Tasks;
 using CustomerService.BusinessLogic.Contexts;
 using CustomerService.Contract.Entities;
 using CustomerService.Contract.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace CustomerService.BusinessLogic.Services
 {
     public class CustomerService : ICustomerService
     {
-        private readonly ApplicationDbContext _context;
+        private readonly CustomerContext _context;
 
-        public CustomerService(ApplicationDbContext context)
+        public CustomerService(CustomerContext context)
         {
             _context = context;
         }
 
-        public Customer AddCustomer(Customer customer)
+        public async Task<Customer> AddCustomerAsync(Customer customer)
         {
-            var result = _context.Customers.Add(customer);
-            _context.SaveChanges();
+            var result = await _context.Customers.AddAsync(customer);
+            await _context.SaveChangesAsync();
             return result.Entity;
         }
 
-        public Customer UpdateCustomer(long customerId, Customer customer)
+        public async Task<Customer> UpdateCustomerAsync(Customer customer)
         {
-            var entity = _context.Customers.FirstOrDefault(c => c.Id == customerId);
-            if (entity == null)
+            if (!await _context.Customers.AnyAsync(c => c.Id == customer.Id))
             {
                 throw new InvalidOperationException("Пользователь с данным идентификатором отсутствует");
             }
 
-            entity.FirstName = customer.FirstName;
-            entity.LastName = customer.LastName;
-            entity.MiddleName = customer.MiddleName;
-
-            var result = _context.Customers.Update(entity);
-            _context.SaveChanges();
+            var result = _context.Customers.Update(customer);
+            await _context.SaveChangesAsync();
 
             return result.Entity;
         }
 
-        public Customer DeleteCustomer(long customerId)
+        public async Task<Customer> DeleteCustomerAsync(long customerId)
         {
-            var entity = _context.Customers.FirstOrDefault(c => c.Id == customerId);
-            if (entity == null)
+            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Id == customerId);
+            if (customer == null)
             {
                 throw new InvalidOperationException("Пользователь с данным идентификатором отсутствует");
             }
 
-            var result = _context.Customers.Remove(entity);
-            _context.SaveChanges();
+            var result = _context.Customers.Remove(customer);
+            await _context.SaveChangesAsync();
             
             return result.Entity;
         }
 
-        public Customer GetCustomerById(long customerId)
+        public async Task<Customer> GetCustomerByIdAsync(long customerId)
         {
-            var entity = _context.Customers.FirstOrDefault(c => c.Id == customerId);
-            if (entity == null)
+            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Id == customerId);
+            if (customer == null)
             {
                 throw new InvalidOperationException("Пользователь с данным идентификатором отсутствует");
             }
 
-            return entity;
+            return customer;
         }
 
-        public List<Customer> GetAllCustomers()
+        public async Task<List<Customer>> GetAllCustomersAsync()
         {
-            return _context.Customers.ToList();
+            return await _context.Customers.ToListAsync();
         }
     }
 }

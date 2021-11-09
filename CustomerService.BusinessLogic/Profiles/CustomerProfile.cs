@@ -19,6 +19,8 @@ namespace CustomerService.BusinessLogic.Profiles
             
             CreateMap<IEnumerable<Customer>, GetCustomersReply>()
                 .ForMember(dest => dest.Customers, opt => opt.MapFrom(src => src));
+            
+            
         }
     }
 }
