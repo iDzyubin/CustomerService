@@ -1,5 +1,3 @@
-using CustomerService.Application.Extensions;
-using CustomerService.BusinessLogic.Adapters;
 using CustomerService.BusinessLogic.Contexts;
 using CustomerService.BusinessLogic.Extensions;
 using CustomerService.Contract.Interfaces;
@@ -24,13 +22,12 @@ namespace CustomerService.Application
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddTransient<IOrderServiceAdapter, OrderServiceAdapter>();
             services.AddTransient<ICustomerService, BusinessLogic.Services.CustomerService>();
             
             services.AddDbContext(Configuration);
             services.AddFluentValidation();
             services.AddAutomapper();
-            services.AddNats(Configuration).AddHandlersToHost();
+            services.AddNats(Configuration);
             
             services.AddControllers();
             services.AddSwaggerGen(c =>

@@ -1,12 +1,12 @@
 ﻿using System.Threading.Tasks;
 using AutoMapper;
 using CustomerService.Application.Controllers;
-using CustomerService.BusinessLogic.Adapters;
 using CustomerService.BusinessLogic.Contexts;
 using CustomerService.BusinessLogic.Models;
 using CustomerService.Contract.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using NatsExtensions.Proxies;
 using NSubstitute;
 using NUnit.Framework;
 
@@ -17,7 +17,7 @@ namespace CustomerService.Tests
     {
         private ICustomerService _customerService;
         private CustomerController _customerController;
-        private IOrderServiceAdapter _orderServiceAdapter;
+        private IProxy<GetOrdersByCustomerIdRequest, GetOrdersByCustomerIdReply> _orderServiceProxy;
         private CustomerContext _dbContext;
         private IMapper _mapper;
         
@@ -30,8 +30,8 @@ namespace CustomerService.Tests
             _dbContext = new CustomerContext(options);
             _mapper = new Mapper(new MapperConfiguration(configure => configure.AddMaps("CustomerService.BusinessLogic")));
             _customerService = new BusinessLogic.Services.CustomerService(_dbContext);
-            _orderServiceAdapter = Substitute.For<IOrderServiceAdapter>();
-            _customerController = new CustomerController(_orderServiceAdapter, _customerService, _mapper);
+            _orderServiceProxy = Substitute.For<IProxy<GetOrdersByCustomerIdRequest, GetOrdersByCustomerIdReply>>();
+            _customerController = new CustomerController(_orderServiceProxy, _customerService, _mapper);
         }
 
         [TearDown]

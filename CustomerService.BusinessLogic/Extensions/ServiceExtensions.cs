@@ -1,11 +1,15 @@
 ﻿using AutoMapper;
 using CustomerService.BusinessLogic.Contexts;
+using CustomerService.BusinessLogic.Handlers;
+using CustomerService.BusinessLogic.Models;
+using CustomerService.BusinessLogic.Proxies;
 using CustomerService.BusinessLogic.Validators;
 using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using NATS.Client;
+using NatsExtensions.Extensions;
 using NatsExtensions.Options;
 using NatsExtensions.Services;
 
@@ -50,7 +54,21 @@ namespace CustomerService.BusinessLogic.Extensions
                 return factory.CreateConnection();
             })
             .AddTransient<INatsService, NatsService>()
-            .Configure<NatsOptions>(configuration.GetSection("Nats"));;
+            .Configure<NatsOptions>(configuration.GetSection("Nats"))
+            .AddNatsHandlers()
+            .AddNatsProxies();
         }
+        
+        private static IServiceCollection AddNatsHandlers(this IServiceCollection services) =>
+            services.AddNatsHandler<
+                GetCustomersRequest, 
+                GetCustomersReply, 
+                GetCustomersHandler>();
+        
+        private static IServiceCollection AddNatsProxies(this IServiceCollection services) =>
+            services.AddNatsProxy<
+                GetOrdersByCustomerIdRequest, 
+                GetOrdersByCustomerIdReply,
+                OrderServiceProxy>();
     }
 }

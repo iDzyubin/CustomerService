@@ -4,7 +4,7 @@ using CustomerService.BusinessLogic.Models;
 using CustomerService.Contract.Interfaces;
 using NatsExtensions.Handlers;
 
-namespace CustomerService.Application.Handlers
+namespace CustomerService.BusinessLogic.Handlers
 {
     /// <summary>
     ///     Обработчик на получение данных покупателей

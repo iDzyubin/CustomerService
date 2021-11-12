@@ -11,6 +11,11 @@ namespace CustomerService.BusinessLogic.Models
     public class AddCustomerReply : Reply
     {
         /// <summary>
+        ///     Идентификатор покупателя
+        /// </summary>
+        public long Id { get; set; }
+        
+        /// <summary>
         /// Имя
         /// </summary>
         public string FirstName { get; set; }

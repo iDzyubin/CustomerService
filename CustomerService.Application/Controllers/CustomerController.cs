@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
 using AutoMapper;
-using CustomerService.BusinessLogic.Adapters;
 using CustomerService.BusinessLogic.Models;
 using CustomerService.Contract.Entities;
 using CustomerService.Contract.Interfaces;
+using CustomerService.Contract.Messages;
 using Microsoft.AspNetCore.Mvc;
+using NatsExtensions.Proxies;
 
 namespace CustomerService.Application.Controllers
 {
@@ -13,13 +14,13 @@ namespace CustomerService.Application.Controllers
     [Route("/api/[controller]/[action]")]
     public class CustomerController : ControllerBase
     {
-        private readonly IOrderServiceAdapter _orderServiceAdapter;
+        private readonly IProxy<GetOrdersByCustomerIdRequest, GetOrdersByCustomerIdReply> _orderServiceProxy;
         private readonly ICustomerService _customerService;
         private readonly IMapper _mapper;
 
-        public CustomerController(IOrderServiceAdapter orderServiceAdapter, ICustomerService customerService, IMapper mapper)
+        public CustomerController(IProxy<GetOrdersByCustomerIdRequest, GetOrdersByCustomerIdReply> orderServiceProxy, ICustomerService customerService, IMapper mapper)
         {
-            _orderServiceAdapter = orderServiceAdapter;
+            _orderServiceProxy = orderServiceProxy;
             _customerService = customerService;
             _mapper = mapper;
         }
@@ -53,8 +54,16 @@ namespace CustomerService.Application.Controllers
 
             try
             {
-                var reply = _orderServiceAdapter.GetOrdersByCustomerId(new GetOrdersByCustomerIdRequest { CustomerId = request.CustomerId });
                 var customer = await _customerService.GetCustomerByIdAsync(request.CustomerId);
+                if (customer == null)
+                {
+                    return BadRequest("Пользователь с указанным идентификатором не существует");
+                }
+                
+                var reply = _orderServiceProxy.Execute(
+                    request: new GetOrdersByCustomerIdRequest { CustomerId = request.CustomerId },
+                    subject: ServiceBusSubjects.OrderSubject);
+                
                 return Ok(new GetCustomerWithOrdersByIdReply { Customer = customer, Orders = reply.Orders });
             }
             catch (Exception e)
