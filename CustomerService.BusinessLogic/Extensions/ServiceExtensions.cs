@@ -46,15 +46,11 @@ namespace CustomerService.BusinessLogic.Extensions
         
         public static IServiceCollection AddNats(this IServiceCollection services, IConfiguration configuration)
         {
-            return services.AddTransient(_ =>
+            return services.AddNatsExtensions(builder =>
             {
-                var factory = new ConnectionFactory();
-                var options = ConnectionFactory.GetDefaultOptions();
-                options.Url = configuration.GetConnectionString("NatsConnection");
-                return factory.CreateConnection();
+                builder.Subject = configuration.GetSection("Nats")["Subject"];
+                builder.ConnectionString = configuration.GetConnectionString("NatsConnection");
             })
-            .AddTransient<INatsService, NatsService>()
-            .Configure<NatsOptions>(configuration.GetSection("Nats"))
             .AddNatsHandlers()
             .AddNatsProxies();
         }
